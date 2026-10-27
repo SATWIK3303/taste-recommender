@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Taste Recommender</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    form {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    input, button {
+      font: inherit;
+      padding: 10px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .card h3 {
+      margin: 4px 0;
+    }
+    .meta {
+      font-size: 0.8rem;
+      color: #666;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <h1>Taste Recommender</h1>
+
+  <form id="form">
+    <input name="f1" placeholder="Favorite 1" required>
+    <input name="f2" placeholder="Favorite 2">
+    <input name="f3" placeholder="Favorite 3">
+    <button type="submit">Get recommendations</button>
+  </form>
+
+  <div id="results"></div>
+
+  <script>
+    const form = document.getElementById('form');
+    const results = document.getElementById('results');
+
+    // Turns text like <b> into harmless text, so it can't break the page
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Builds one card per recommendation and shows them on the page
+    function renderCards(items) {
+      if (items.length === 0) {
+        results.innerHTML = '<p>No matches found. Try different favorites.</p>';
+        return;
+      }
+
+      results.innerHTML = items
+        .map((item) => `
+          <div class="card">
+            <div class="meta">${escapeHtml(item.category)} · because you like ${escapeHtml(item.source)}</div>
+            <h3>${escapeHtml(item.title)}</h3>
+            <p>${escapeHtml(item.reason)}</p>
+          </div>
+        `)
+        .join('');
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault(); // stop the page from reloading
+
+      const data = new FormData(form);
+      const favorites = [data.get('f1'), data.get('f2'), data.get('f3')]
+        .map((value) => (value || '').trim())
+        .filter(Boolean);
+
+      results.innerHTML = '<p>Finding matches...</p>';
+
+      try {
+        const response = await fetch('/api/recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ favorites }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Something went wrong.');
+        }
+
+        renderCards(data);
+      } catch (error) {
+        results.innerHTML = `<p>${escapeHtml(error.message)}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
