@@ -1,55 +1,191 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Taste Recommender</title>
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 24px;
+    :root {
+      --bg: #f5f3ff;
+      --card: #ffffff;
+      --text: #1f1d2e;
+      --muted: #6b6880;
+      --accent: #6d4aff;
+      --accent-hover: #5636e0;
+      --border: #e6e3f3;
+      --shadow: 0 4px 16px rgba(60, 40, 140, 0.08);
     }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #15131f;
+        --card: #1f1c2e;
+        --text: #f1eefc;
+        --muted: #a39fbd;
+        --accent: #9b84ff;
+        --accent-hover: #b09dff;
+        --border: #332f4a;
+        --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: linear-gradient(160deg, var(--bg), var(--card));
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 16px 64px;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .tagline {
+      color: var(--muted);
+      margin: 0 0 28px;
+      font-size: 1.05rem;
+    }
+
+    .search-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
     form {
       display: grid;
-      gap: 10px;
-      margin-bottom: 24px;
+      gap: 12px;
     }
-    input, button {
+
+    input {
       font: inherit;
-      padding: 10px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
     }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.25);
+    }
+
+    button {
+      font: inherit;
+      font-weight: 600;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+    }
+
+    button:hover { background: var(--accent-hover); }
+    button:active { transform: scale(0.99); }
+    button:disabled { opacity: 0.6; cursor: wait; }
+
+    #results {
+      margin-top: 28px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .status {
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .error { color: #d6336c; }
+
     .card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.3s ease both;
     }
-    .card h3 {
-      margin: 4px 0;
-    }
-    .meta {
-      font-size: 0.8rem;
-      color: #666;
+
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(109, 74, 255, 0.12);
+      color: var(--accent);
+    }
+
+    .card h3 {
+      margin: 10px 0 4px;
+      font-size: 1.2rem;
+    }
+
+    .because {
+      margin: 0 0 8px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .reason {
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @media (min-width: 600px) {
+      form { grid-template-columns: 1fr 1fr 1fr; }
+      button { grid-column: 1 / -1; }
     }
   </style>
 </head>
 <body>
-  <h1>Taste Recommender</h1>
+  <div class="wrap">
+    <header>
+      <h1>Taste Recommender</h1>
+      <p class="tagline">Tell us three things you love. We'll find matches across other areas of culture.</p>
+    </header>
 
-  <form id="form">
-    <input name="f1" placeholder="Favorite 1" required>
-    <input name="f2" placeholder="Favorite 2">
-    <input name="f3" placeholder="Favorite 3">
-    <button type="submit">Get recommendations</button>
-  </form>
+    <div class="search-card">
+      <form id="form">
+        <input name="f1" placeholder="Favorite 1, e.g. Blade Runner" required>
+        <input name="f2" placeholder="Favorite 2">
+        <input name="f3" placeholder="Favorite 3">
+        <button type="submit" id="submit">Get recommendations</button>
+      </form>
+    </div>
 
-  <div id="results"></div>
+    <section id="results"></section>
+  </div>
 
   <script>
     const form = document.getElementById('form');
     const results = document.getElementById('results');
+    const submitBtn = document.getElementById('submit');
 
     // Turns text like <b> into harmless text, so it can't break the page
     function escapeHtml(text) {
@@ -58,33 +194,36 @@
       return div.innerHTML;
     }
 
-    // Builds one card per recommendation and shows them on the page
+    // Builds one card per recommendation
     function renderCards(items) {
       if (items.length === 0) {
-        results.innerHTML = '<p>No matches found. Try different favorites.</p>';
+        results.innerHTML = '<p class="status">No matches found. Check the spelling or try different favorites.</p>';
         return;
       }
 
       results.innerHTML = items
         .map((item) => `
           <div class="card">
-            <div class="meta">${escapeHtml(item.category)} · because you like ${escapeHtml(item.source)}</div>
+            <span class="badge">${escapeHtml(item.category)}</span>
             <h3>${escapeHtml(item.title)}</h3>
-            <p>${escapeHtml(item.reason)}</p>
+            <p class="because">Because you like ${escapeHtml(item.source)}</p>
+            <p class="reason">${escapeHtml(item.reason)}</p>
           </div>
         `)
         .join('');
     }
 
     form.addEventListener('submit', async (event) => {
-      event.preventDefault(); // stop the page from reloading
+      event.preventDefault();
 
       const data = new FormData(form);
       const favorites = [data.get('f1'), data.get('f2'), data.get('f3')]
         .map((value) => (value || '').trim())
         .filter(Boolean);
 
-      results.innerHTML = '<p>Finding matches...</p>';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Finding matches...';
+      results.innerHTML = '<p class="status">Finding matches...</p>';
 
       try {
         const response = await fetch('/api/recommend', {
@@ -101,7 +240,10 @@
 
         renderCards(data);
       } catch (error) {
-        results.innerHTML = `<p>${escapeHtml(error.message)}</p>`;
+        results.innerHTML = `<p class="status error">${escapeHtml(error.message)}</p>`;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Get recommendations';
       }
     });
   </script>
